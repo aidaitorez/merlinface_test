@@ -1,0 +1,49 @@
+<?php
+
+namespace App\api;
+
+class MerlinfaceClient
+{
+    public function sendPhoto($name, $photoPath)
+    {
+        $url = 'http://merlinface.com:12345/api/';
+        $fields = [
+            'name' => $name,
+            'photo' => curl_file_create($photoPath['tmp_name'], $photoPath['type'], $photoPath['name'])
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+
+        return $data;
+    }
+
+    public function retry($retry_id)
+    {
+        $url = 'http://merlinface.com:12345/api/';
+        $fields = [
+            'retry_id' => $retry_id
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+
+        return $data;
+    }
+}
