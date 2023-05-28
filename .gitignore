@@ -1,6 +1,6 @@
 # .gitignore
 
 # Ignore the vendor folder
-/vendor/
+
 /logs/
 /data/
