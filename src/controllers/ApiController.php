@@ -14,16 +14,13 @@ class APIController
         private MerlinfaceClient $merlinfaceClient,
         private PhotoService $photoService
     ) {
-        $this->taskRepository = $taskRepository;
-        $this->merlinfaceClient = $merlinfaceClient;
-        $this->photoService = $photoService;
     }
+
 
     public function handlePostRequest($name, $photo)
     {
+        $this->photoService->uploadPhoto($photo);
         $photoPath = $photo['tmp_name'];
-
-        // Get the file name from the photo path
         $photoName = basename($photo['name']);
         // Check if the user already submitted the same photo
         $existingTask = $this->taskRepository->findTaskByPhotoAndName($name, $photoName);
@@ -33,7 +30,7 @@ class APIController
             $this->sendResponse('ready', $result, $taskId);
             exit;
         }
-        $this->photoService->uploadPhoto($photo);
+
         $taskId = $this->taskRepository->createTask($name, $photoName, $photoPath);
 
         // Return the response
@@ -41,19 +38,7 @@ class APIController
         // Send the photo for processing
         $response = $this->merlinfaceClient->sendPhoto($name, $photo);
 
-        // Process the response from the MerlinFace API
-        $status = $response['status'];
-        if ($status === 'success') {
-            $result = $response['result'];
-            $this->taskRepository->markTaskAsCompleted($taskId, $result);
-            // $this->sendResponse('ready', $result, $taskId);
-        } elseif ($status === 'wait') {
-            $retryId = $response['retry_id'];
-            $this->waitForResult($retryId, $taskId);
-        } else {
-            // Handle unexpected response
-            $this->handleUnexpectedResponse($response);
-        }
+        $this->processMerlinfaceResponse($response, $taskId);
     }
 
     public function handleGetRequest($taskId)
@@ -77,6 +62,22 @@ class APIController
         }
     }
 
+    private function processMerlinfaceResponse($response, $taskId)
+    {
+        $status = $response['status'];
+
+        if ($status === 'success') {
+            $result = $response['result'];
+            $this->taskRepository->markTaskAsCompleted($taskId, $result);
+            // $this->sendResponse('ready', $result, $taskId);
+        } elseif ($status === 'wait') {
+            $retryId = $response['retry_id'];
+            $this->waitForResult($retryId, $taskId);
+        } else {
+            $this->handleUnexpectedResponse($response);
+        }
+    }
+
     private function waitForResult($retryId, $taskId)
     {
         sleep(2); // Wait for a few seconds before sending the request again
@@ -85,17 +86,7 @@ class APIController
         $response = $this->merlinfaceClient->retry($retryId);
 
         // Process the response from the MerlinFace API
-        $status = $response['status'];
-        if ($status === 'success') {
-            $result = $response['result'];
-            $this->taskRepository->markTaskAsCompleted($taskId, $result);
-            // $this->sendResponse('ready', $result, $taskId);
-        } elseif ($status === 'wait') {
-            // Retry recursively until the result is ready
-            $this->waitForResult($retryId, $taskId);
-        } else {
-            $this->handleUnexpectedResponse($response);
-        }
+        $this->processMerlinfaceResponse($response, $taskId);
     }
 
     private function sendResponse($status, $result = null, $taskId = null)

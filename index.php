@@ -55,6 +55,10 @@ if ($command === 'post') {
     $apiController->handlePostRequest($name, $photo);
 } elseif ($command === 'get') {
     $taskId = $argument1;
+    if (empty($argument1)) {
+        echo 'Missing required argument taskId. Usage: php index.php get <taskId>' . PHP_EOL;
+        exit;
+    }
     $apiController->handleGetRequest($taskId);
 } else {
     // Invalid command
