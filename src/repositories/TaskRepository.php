@@ -2,6 +2,7 @@
 
 namespace App\repositories;
 
+use App\services\QueueService;
 use PDO;
 use PDOException;
 
@@ -9,7 +10,8 @@ class TaskRepository
 {
     private $database;
 
-    public function __construct()
+
+    public function __construct(private QueueService $queueService)
     {
         $host = '0.0.0.0';
         $port = 3307;
@@ -32,7 +34,15 @@ class TaskRepository
         try {
             $stmt = $this->database->prepare('INSERT INTO tasks (name, photo_name, photo_path) VALUES (?, ?, ?)');
             $stmt->execute([$name, $photoName, $photoPath]);
-            return $this->database->lastInsertId();
+            $taskId = $this->database->lastInsertId();
+            // Добавление задачи в очередь
+            $data = [
+                'task_id' => $taskId,
+                'name' => $name,
+                'photo' => $photoName
+            ];
+            $this->queueService->addToQueue($data);
+            return $taskId;
         } catch (PDOException $e) {
             $this->handleDBException($e);
         }

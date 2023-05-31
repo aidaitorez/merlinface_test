@@ -2,9 +2,12 @@
 
 namespace App\controllers;
 
-use App\api\MerlinfaceClient;
+
 use App\repositories\TaskRepository;
 use App\services\PhotoService;
+use App\services\QueueService;
+use App\api\MerlinfaceClient;
+
 
 class APIController
 {
@@ -15,6 +18,7 @@ class APIController
         private PhotoService $photoService
     ) {
     }
+
 
 
     public function handlePostRequest($name, $photo)
@@ -35,10 +39,31 @@ class APIController
 
         // Return the response
         $this->sendResponse('received', null, $taskId);
+        $this->startBackgroundWork($taskId, $name, $photo);
+    }
+
+    private function startBackgroundWork($taskId, $name, $photoPath)
+    {
         // Send the photo for processing
-        $response = $this->merlinfaceClient->sendPhoto($name, $photo);
+        $response = $this->merlinfaceClient->sendPhoto($name, $photoPath);
 
         $this->processMerlinfaceResponse($response, $taskId);
+    }
+
+    private function processMerlinfaceResponse($response, $taskId)
+    {
+        $status = $response['status'];
+
+        if ($status === 'success') {
+            $result = $response['result'];
+            $this->taskRepository->markTaskAsCompleted($taskId, $result);
+            // $this->sendResponse('ready', $result, $taskId);
+        } elseif ($status === 'wait') {
+            $retryId = $response['retry_id'];
+            $this->waitForResult($retryId, $taskId);
+        } else {
+            $this->handleUnexpectedResponse($response);
+        }
     }
 
     public function handleGetRequest($taskId)
@@ -62,21 +87,7 @@ class APIController
         }
     }
 
-    private function processMerlinfaceResponse($response, $taskId)
-    {
-        $status = $response['status'];
 
-        if ($status === 'success') {
-            $result = $response['result'];
-            $this->taskRepository->markTaskAsCompleted($taskId, $result);
-            // $this->sendResponse('ready', $result, $taskId);
-        } elseif ($status === 'wait') {
-            $retryId = $response['retry_id'];
-            $this->waitForResult($retryId, $taskId);
-        } else {
-            $this->handleUnexpectedResponse($response);
-        }
-    }
 
     private function waitForResult($retryId, $taskId)
     {

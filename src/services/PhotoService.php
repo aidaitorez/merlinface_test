@@ -2,7 +2,6 @@
 
 namespace App\services;
 
-use App\api\MerlinfaceClient;
 
 class PhotoService
 {

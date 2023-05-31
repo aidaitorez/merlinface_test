@@ -5,17 +5,41 @@ MerlinFace API Response: null
 MerlinFace API Response: null
 MerlinFace API Response: null
 MerlinFace API Response: null
-MerlinFace API Response: {"status":"success","result":81.16266121210654,"retry_id":null,"errors":[]}
-MerlinFace API Response: {"status":"success","result":"16.609416118175","retry_id":null,"errors":[]}
-MerlinFace API Response: {"status":"success","result":93.8715906785203,"retry_id":null,"errors":[]}
-MerlinFace API Response: {"status":"success","result":"11.557039903271","retry_id":null,"errors":[]}
-MerlinFace API Response: {"status":"success","result":"42.81343200375","retry_id":null,"errors":[]}
 MerlinFace API Response: null
 MerlinFace API Response: null
-MerlinFace API Response: null
-MerlinFace API Response: null
-MerlinFace API Response: null
-MerlinFace API Response: null
-MerlinFace API Response: null
-MerlinFace API Response: null
-MerlinFace API Response: null
+'/Users/user/Sites/test.local/public/photo3.jpg''/Users/user/Sites/test.local/public/photo3.jpg''/Users/user/Sites/test.local/public/photo3.jpg'array (
+  'task_id' => '59',
+  'name' => '1ewssqds',
+  'photo_path' => '/Users/user/Sites/test.local/public/photo3.jpg',
+)array (
+  'task_id' => '59',
+  'name' => '1ewssqds',
+  'photo_path' => '/Users/user/Sites/test.local/public/photo3.jpg',
+)array (
+  'task_id' => '81',
+  'name' => '32omkj',
+  'photo_path' => 
+  array (
+    'name' => 'photo2.jpg',
+    'type' => 'image/jpeg',
+    'tmp_name' => '/Users/user/Sites/test.local/public/photo2.jpg',
+  ),
+)array (
+  'task_id' => '82',
+  'name' => 'Honey',
+  'photo_path' => 
+  array (
+    'name' => 'photo2.jpg',
+    'type' => 'image/jpeg',
+    'tmp_name' => '/Users/user/Sites/test.local/public/photo2.jpg',
+  ),
+)array (
+  'task_id' => '83',
+  'name' => 'Honey2',
+  'photo_path' => 
+  array (
+    'name' => 'photo2.jpg',
+    'type' => 'image/jpeg',
+    'tmp_name' => '/Users/user/Sites/test.local/public/photo2.jpg',
+  ),
+)

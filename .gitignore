@@ -1,6 +1,8 @@
 # .gitignore
 
 # Ignore the vendor folder
-
-/logs/
-/data/
+vendor
+logs/
+data/
+mnesia/
+.erlang.cookie

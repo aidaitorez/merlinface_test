@@ -6,11 +6,14 @@ use App\controllers\APIController;
 use App\repositories\TaskRepository;
 use App\api\MerlinfaceClient;
 use App\services\PhotoService;
+use App\services\QueueService;
 
 // Instantiate the dependencies
-$taskRepository = new TaskRepository();
+$queue = new QueueService();
+$taskRepository = new TaskRepository($queue);
 $merlinfaceClient = new MerlinfaceClient();
 $photoService = new PhotoService;
+
 
 // Instantiate the APIController with the dependencies
 $apiController = new APIController($taskRepository, $merlinfaceClient, $photoService);
@@ -53,6 +56,8 @@ if ($command === 'post') {
     ];
 
     $apiController->handlePostRequest($name, $photo);
+
+    // $queue->consumeQueue();
 } elseif ($command === 'get') {
     $taskId = $argument1;
     if (empty($argument1)) {
