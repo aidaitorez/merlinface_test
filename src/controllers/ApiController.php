@@ -15,7 +15,8 @@ class APIController
     public function __construct(
         private TaskRepository $taskRepository,
         private MerlinfaceClient $merlinfaceClient,
-        private PhotoService $photoService
+        private PhotoService $photoService,
+        private QueueService $queueService
     ) {
     }
 
@@ -37,34 +38,19 @@ class APIController
 
         $taskId = $this->taskRepository->createTask($name, $photoName, $photoPath);
 
-        // Return the response
+        $photo = [
+            'name' => $photoName,
+            'type' => $photo['type'],
+            'tmp_name' => $photoPath
+        ];
+        $taskData = ['task_id' => $taskId, 'name' => $name, 'photo' =>  $photo];
+
+        // Add the task to the queue for processing
+        $this->queueService->addToQueue($taskData);
+
         $this->sendResponse('received', null, $taskId);
-        $this->startBackgroundWork($taskId, $name, $photo);
     }
 
-    private function startBackgroundWork($taskId, $name, $photoPath)
-    {
-        // Send the photo for processing
-        $response = $this->merlinfaceClient->sendPhoto($name, $photoPath);
-
-        $this->processMerlinfaceResponse($response, $taskId);
-    }
-
-    private function processMerlinfaceResponse($response, $taskId)
-    {
-        $status = $response['status'];
-
-        if ($status === 'success') {
-            $result = $response['result'];
-            $this->taskRepository->markTaskAsCompleted($taskId, $result);
-            // $this->sendResponse('ready', $result, $taskId);
-        } elseif ($status === 'wait') {
-            $retryId = $response['retry_id'];
-            $this->waitForResult($retryId, $taskId);
-        } else {
-            $this->handleUnexpectedResponse($response);
-        }
-    }
 
     public function handleGetRequest($taskId)
     {
@@ -88,18 +74,6 @@ class APIController
     }
 
 
-
-    private function waitForResult($retryId, $taskId)
-    {
-        sleep(2); // Wait for a few seconds before sending the request again
-
-        // Send a request to check the result using the retryId
-        $response = $this->merlinfaceClient->retry($retryId);
-
-        // Process the response from the MerlinFace API
-        $this->processMerlinfaceResponse($response, $taskId);
-    }
-
     private function sendResponse($status, $result = null, $taskId = null)
     {
         $response = [
@@ -115,17 +89,5 @@ class APIController
         // Send the response as JSON
         header('Content-Type: application/json');
         echo json_encode($response);
-    }
-
-    private function handleUnexpectedResponse($response)
-    {
-        $logMessage = 'MerlinFace API Response: ' . json_encode($response);
-
-        // Log to a file
-        $logFile = 'logs/api.log';
-        file_put_contents($logFile, $logMessage . PHP_EOL, FILE_APPEND);
-
-        // Or log to the console
-        echo $logMessage . PHP_EOL;
     }
 }

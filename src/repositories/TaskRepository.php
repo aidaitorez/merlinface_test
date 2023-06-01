@@ -41,7 +41,7 @@ class TaskRepository
                 'name' => $name,
                 'photo' => $photoName
             ];
-            $this->queueService->addToQueue($data);
+
             return $taskId;
         } catch (PDOException $e) {
             $this->handleDBException($e);

@@ -43,5 +43,16 @@ services:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
       - RABBITMQ_PLUGINS=rabbitmq_management
-volumes:
-  rabbitmq_data:
+  worker:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - ./app:/app
+    command: sh -c "nohup php worker.php > /dev/null 2>&1 &"
+    depends_on:
+      - rabbitmq
+
+networks:
+  my-network:
+    driver: bridge

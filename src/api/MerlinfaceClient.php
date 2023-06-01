@@ -9,13 +9,13 @@ class MerlinfaceClient
 {
     public function sendPhoto($name, $photoPath)
     {
-        // file_put_contents('logs/api.log', var_export($photoPath, true), FILE_APPEND);
+
         $url = 'http://merlinface.com:12345/api/';
         $fields = [
             'name' => $name,
             'photo' => curl_file_create($photoPath['tmp_name'], $photoPath['type'], $photoPath['name'])
         ];
-
+        file_put_contents('logs/api.log', var_export($fields, true), FILE_APPEND);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -30,25 +30,6 @@ class MerlinfaceClient
         return $data;
     }
 
-
-
-    // public function processMerlinfaceResponse($response, $taskId)
-    // {
-    //     $taskRepository = new TaskRepository();
-    //     $status = $response['status'];
-
-
-    //     if ($status === 'success') {
-    //         $result = $response['result'];
-    //         $taskRepository->markTaskAsCompleted($taskId, $result);
-    //         // $this->sendResponse('ready', $result, $taskId);
-    //     } elseif ($status === 'wait') {
-    //         $retryId = $response['retry_id'];
-    //         $this->waitForResult($retryId, $taskId);
-    //     } else {
-    //         $this->handleUnexpectedResponse($response);
-    //     }
-    // }
 
     public function retry($retry_id)
     {
@@ -71,18 +52,8 @@ class MerlinfaceClient
         return $data;
     }
 
-    // public function waitForResult($retryId, $taskId)
-    // {
-    //     sleep(2); // Wait for a few seconds before sending the request again
 
-    //     // Send a request to check the result using the retryId
-    //     $response = $this->retry($retryId);
-
-    //     // Process the response from the MerlinFace API
-    //     $this->processMerlinfaceResponse($response, $taskId);
-    // }
-
-    private function handleUnexpectedResponse($response)
+    public function handleUnexpectedResponse($response)
     {
         $logMessage = 'MerlinFace API Response: ' . json_encode($response);
 

@@ -1,12 +1,13 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
-
+require_once __DIR__ . '/worker.php';
 
 use App\controllers\APIController;
 use App\repositories\TaskRepository;
 use App\api\MerlinfaceClient;
 use App\services\PhotoService;
 use App\services\QueueService;
+use App\Worker;
 
 // Instantiate the dependencies
 $queue = new QueueService();
@@ -16,7 +17,7 @@ $photoService = new PhotoService;
 
 
 // Instantiate the APIController with the dependencies
-$apiController = new APIController($taskRepository, $merlinfaceClient, $photoService);
+$apiController = new APIController($taskRepository, $merlinfaceClient, $photoService, $queue);
 
 // Get the command-line arguments
 $command = isset($argv[1]) ? $argv[1] : '';
@@ -56,6 +57,9 @@ if ($command === 'post') {
     ];
 
     $apiController->handlePostRequest($name, $photo);
+
+    $worker = new Worker($queue, $merlinfaceClient, $taskRepository);
+    $worker->run();
 
     // $queue->consumeQueue();
 } elseif ($command === 'get') {
